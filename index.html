@@ -3,17 +3,12 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Huwelijks APK Poll</title>
+    <title>Huwelijks APK Poll - Split Screen</title>
     <style>
         /* --- Moderne UI Instellingen --- */
         body {
             background-color: #F7F9FC;
             font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
-            display: flex;
-            flex-direction: column;
-            justify-content: center;
-            align-items: center;
-            height: 100vh;
             margin: 0;
             overflow: hidden;
             position: relative;
@@ -27,31 +22,78 @@
             height: 100%;
             background-image: url('YMtransparant.png'); 
             background-size: 100% 100%;
-            opacity: 0.25; /* Iets feller gezet (was 0.15) zodat je hem beter ziet */
+            opacity: 0.25; 
             z-index: -1; 
         }
 
+        /* --- Split Screen Layout --- */
+        .split-layout {
+            display: grid;
+            grid-template-columns: 40% 60%;
+            height: 100vh;
+            width: 100vw;
+        }
+
+        /* De containers die de kaarten centreren */
+        .qr-section, .quiz-section {
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            padding: 40px;
+            height: 100%;
+            box-sizing: border-box;
+        }
+
+        /* --- NIEUW: De QR Kaart (Links) --- */
+        /* Deze heeft nu dezelfde 'zwevende' stijl als rechts */
+        .qr-card {
+            background-color: rgba(255, 255, 255, 0.6); /* Iets witter dan rechts voor leesbaarheid QR */
+            backdrop-filter: blur(10px);
+            -webkit-backdrop-filter: blur(10px);
+            padding: 40px;
+            border-radius: 20px;
+            box-shadow: 0 10px 40px rgba(0,0,0,0.15);
+            border: 1px solid rgba(255, 255, 255, 0.6);
+            text-align: center;
+            width: 100%;
+            max-width: 450px; /* Zorgt dat hij niet te breed wordt */
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+        }
+
+        .qr-card h2 {
+            color: #2D3748;
+            font-size: 32px;
+            margin-bottom: 30px;
+            margin-top: 0;
+        }
+
+        .qr-image {
+            width: 100%;
+            max-width: 300px; /* Iets kleiner gezet zodat het mooi in de kaart past */
+            border-radius: 15px;
+            /* De witte rand om de QR zelf is nu minder nodig omdat de kaart al wit is */
+            box-shadow: 0 5px 15px rgba(0,0,0,0.1); 
+        }
+
+        /* --- De Quiz Kaart (Rechts) --- */
         .card {
-            /* HIER ZIT DE MAGIE: 0.50 betekent 50% doorzichtig wit. 
-               Wil je hem nóg doorzichtiger? Maak er dan 0.30 van! */
             background-color: rgba(255, 255, 255, 0.01); 
-            
-            /* Dit zorgt dat de achtergrondfoto direct achter het blok mooi vervaagt */
             backdrop-filter: blur(10px); 
             -webkit-backdrop-filter: blur(10px); 
-            
             padding: 40px 50px; 
             border-radius: 20px;
             box-shadow: 0 10px 40px rgba(0,0,0,0.15); 
-            border: 1px solid rgba(255, 255, 255, 0.6); /* Iets opvallender randje voor het glas-effect */
+            border: 1px solid rgba(255, 255, 255, 0.6); 
             text-align: center;
+            width: 100%;
             max-width: 800px; 
-            width: 90%;
             z-index: 10;
         }
 
-        h1 { color: #2D3748; font-size: 48px; margin-bottom: 10px; margin-top: 0; }
-        p.vraag { color: #718096; font-size: 24px; font-style: italic; margin-bottom: 50px; }
+        h1 { color: #2D3748; font-size: 42px; margin-bottom: 10px; margin-top: 0; }
+        p.vraag { color: #718096; font-size: 22px; font-style: italic; margin-bottom: 50px; }
 
         .optie-rij { display: flex; align-items: center; margin-bottom: 25px; justify-content: flex-start; }
 
@@ -115,13 +157,14 @@
             width: 120px;
             height: 120px;
             z-index: 999;
-            cursor: default; /* Laat niet zien dat het een knop is! */
+            cursor: default; 
         }
 
         .admin-menu {
-            display: none; /* Standaard verborgen */
+            display: none; 
             position: absolute;
             bottom: 30px;
+            right: 30px; 
             background-color: white;
             padding: 15px;
             border-radius: 12px;
@@ -150,42 +193,53 @@
 <body>
 
     <div class="geheime-knop" onclick="checkGeheimeKlik()"></div>
-
     <div class="achtergrond-logo"></div>
 
-    <div class="card">
-        <h1>Huwelijks APK: Tik om te stemmen! 👆</h1>
-        <p class="vraag">Waar wil jij in jouw huwelijk meer aandacht aan besteden?</p>
-
-        <div class="optie-rij">
-            <button class="stem-btn btn-0" onclick="stem(0)">Communicatie</button>
-            <div class="balk-container" id="container-0">
-                <div id="vulling-0" class="balk-vulling balk-0"></div>
-                <div id="cijfer-0" class="stem-cijfer">0</div>
+    <div class="split-layout">
+        
+        <div class="qr-section">
+            <div class="qr-card">
+                <h2>Scan de QR-code en vul de vragen in!</h2>
+                <img src="qrcodequizhapk.png" alt="Scan QR om te stemmen" class="qr-image">
             </div>
         </div>
 
-        <div class="optie-rij">
-            <button class="stem-btn btn-1" onclick="stem(1)">Tijd voor elkaar</button>
-            <div class="balk-container" id="container-1">
-                <div id="vulling-1" class="balk-vulling balk-1"></div>
-                <div id="cijfer-1" class="stem-cijfer">0</div>
-            </div>
-        </div>
+        <div class="quiz-section">
+            <div class="card">
+                <h1>Huwelijks APK: <br> Tik om te stemmen! 👆</h1>
+                <p class="vraag">Waar wil jij in jouw huwelijk meer aandacht aan besteden?</p>
 
-        <div class="optie-rij">
-            <button class="stem-btn btn-2" onclick="stem(2)">Romantiek</button>
-            <div class="balk-container" id="container-2">
-                <div id="vulling-2" class="balk-vulling balk-2"></div>
-                <div id="cijfer-2" class="stem-cijfer">0</div>
-            </div>
-        </div>
+                <div class="optie-rij">
+                    <button class="stem-btn btn-0" onclick="stem(0)">Communicatie</button>
+                    <div class="balk-container" id="container-0">
+                        <div id="vulling-0" class="balk-vulling balk-0"></div>
+                        <div id="cijfer-0" class="stem-cijfer">0</div>
+                    </div>
+                </div>
 
-        <div class="optie-rij">
-            <button class="stem-btn btn-3" onclick="stem(3)">Geloof</button>
-            <div class="balk-container" id="container-3">
-                <div id="vulling-3" class="balk-vulling balk-3"></div>
-                <div id="cijfer-3" class="stem-cijfer">0</div>
+                <div class="optie-rij">
+                    <button class="stem-btn btn-1" onclick="stem(1)">Tijd voor elkaar</button>
+                    <div class="balk-container" id="container-1">
+                        <div id="vulling-1" class="balk-vulling balk-1"></div>
+                        <div id="cijfer-1" class="stem-cijfer">0</div>
+                    </div>
+                </div>
+
+                <div class="optie-rij">
+                    <button class="stem-btn btn-2" onclick="stem(2)">Romantiek</button>
+                    <div class="balk-container" id="container-2">
+                        <div id="vulling-2" class="balk-vulling balk-2"></div>
+                        <div id="cijfer-2" class="stem-cijfer">0</div>
+                    </div>
+                </div>
+
+                <div class="optie-rij">
+                    <button class="stem-btn btn-3" onclick="stem(3)">Geloof</button>
+                    <div class="balk-container" id="container-3">
+                        <div id="vulling-3" class="balk-vulling balk-3"></div>
+                        <div id="cijfer-3" class="stem-cijfer">0</div>
+                    </div>
+                </div>
             </div>
         </div>
     </div>
@@ -210,12 +264,10 @@
             klikTeller++;
             clearTimeout(klikTimer);
             
-            // Als er 2 seconden niet geklikt is, reset de teller weer naar 0
             klikTimer = setTimeout(() => { klikTeller = 0; }, 2000);
 
-            // Bij 5 snelle kliks: vraag om pincode!
             if (klikTeller >= 5) {
-                klikTeller = 0; // Reset direct
+                klikTeller = 0; 
                 let pin = prompt("Geef de 4-cijferige pincode om beheer te openen:");
                 if (pin === "0000") {
                     document.getElementById('admin-menu').style.display = 'block';
@@ -307,7 +359,7 @@
                 stemmen = [0, 0, 0, 0];
                 localStorage.setItem('apkStemmen', JSON.stringify(stemmen));
                 tekenBalken();
-                sluitAdmin(); // Sluit menuutje netjes af na reset
+                sluitAdmin(); 
             }
         }
 
@@ -315,5 +367,4 @@
         window.addEventListener('resize', tekenBalken);
     </script>
 </body>
-
 </html>
