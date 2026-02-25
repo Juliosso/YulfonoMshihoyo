@@ -1,0 +1,318 @@
+<!DOCTYPE html>
+<html lang="nl">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Huwelijks APK Poll</title>
+    <style>
+        /* --- Moderne UI Instellingen --- */
+        body {
+            background-color: #F7F9FC;
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            height: 100vh;
+            margin: 0;
+            overflow: hidden;
+            position: relative;
+        }
+
+        .achtergrond-logo {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background-image: url('YMtransparant.png'); 
+            background-size: 100% 100%;
+            opacity: 0.25; /* Iets feller gezet (was 0.15) zodat je hem beter ziet */
+            z-index: -1; 
+        }
+
+        .card {
+            /* HIER ZIT DE MAGIE: 0.50 betekent 50% doorzichtig wit. 
+               Wil je hem nóg doorzichtiger? Maak er dan 0.30 van! */
+            background-color: rgba(255, 255, 255, 0.01); 
+            
+            /* Dit zorgt dat de achtergrondfoto direct achter het blok mooi vervaagt */
+            backdrop-filter: blur(10px); 
+            -webkit-backdrop-filter: blur(10px); 
+            
+            padding: 40px 50px; 
+            border-radius: 20px;
+            box-shadow: 0 10px 40px rgba(0,0,0,0.15); 
+            border: 1px solid rgba(255, 255, 255, 0.6); /* Iets opvallender randje voor het glas-effect */
+            text-align: center;
+            max-width: 800px; 
+            width: 90%;
+            z-index: 10;
+        }
+
+        h1 { color: #2D3748; font-size: 48px; margin-bottom: 10px; margin-top: 0; }
+        p.vraag { color: #718096; font-size: 24px; font-style: italic; margin-bottom: 50px; }
+
+        .optie-rij { display: flex; align-items: center; margin-bottom: 25px; justify-content: flex-start; }
+
+        .stem-btn {
+            border: none;
+            padding: 15px 25px;
+            font-size: 18px;
+            font-weight: bold;
+            border-radius: 12px;
+            cursor: pointer;
+            width: 200px;
+            text-align: center;
+            transition: filter 0.2s, transform 0.1s;
+            margin-right: 30px;
+            flex-shrink: 0;
+        }
+
+        .stem-btn:active { transform: scale(0.95); }
+        .stem-btn:hover { filter: brightness(1.1); }
+
+        .btn-0 { background-color: #FF6B6B; color: white; }
+        .btn-1 { background-color: #4ECDC4; color: white; }
+        .btn-2 { background-color: #FFD166; color: #2D3748; }
+        .btn-3 { background-color: #8A2BE2; color: white; }
+
+        .balk-container {
+            background-color: #EDF2F7;
+            height: 65px;
+            width: 100%;
+            border-radius: 35px;
+            position: relative;
+        }
+
+        .balk-vulling {
+            height: 100%;
+            width: 0%; 
+            border-radius: 35px;
+            transition: width 0.6s cubic-bezier(0.25, 0.8, 0.25, 1);
+        }
+
+        .balk-0 { background-color: #FF6B6B; }
+        .balk-1 { background-color: #4ECDC4; }
+        .balk-2 { background-color: #FFD166; }
+        .balk-3 { background-color: #8A2BE2; }
+
+        .stem-cijfer {
+            position: absolute;
+            top: 0;
+            height: 65px;
+            line-height: 65px;
+            font-size: 20px;
+            font-weight: bold;
+            transition: left 0.6s cubic-bezier(0.25, 0.8, 0.25, 1), color 0.3s;
+        }
+
+        /* --- Geheime Beheerder functionaliteit --- */
+        .geheime-knop {
+            position: absolute;
+            top: 0;
+            right: 0;
+            width: 120px;
+            height: 120px;
+            z-index: 999;
+            cursor: default; /* Laat niet zien dat het een knop is! */
+        }
+
+        .admin-menu {
+            display: none; /* Standaard verborgen */
+            position: absolute;
+            bottom: 30px;
+            background-color: white;
+            padding: 15px;
+            border-radius: 12px;
+            box-shadow: 0 5px 20px rgba(0,0,0,0.2);
+            border: 2px solid #E2E8F0;
+            z-index: 1000;
+        }
+        
+        .admin-btn {
+            background-color: #F7F9FC;
+            color: #2D3748;
+            border: 1px solid #CBD5E0;
+            padding: 10px 15px;
+            border-radius: 6px;
+            cursor: pointer;
+            font-size: 14px;
+            font-weight: bold;
+            margin: 0 5px;
+        }
+
+        .admin-btn.rood { color: white; background-color: #FF6B6B; border-color: #FF6B6B; }
+        #file-input { display: none; } 
+
+    </style>
+</head>
+<body>
+
+    <div class="geheime-knop" onclick="checkGeheimeKlik()"></div>
+
+    <div class="achtergrond-logo"></div>
+
+    <div class="card">
+        <h1>Huwelijks APK: Tik om te stemmen! 👆</h1>
+        <p class="vraag">Waar kunnen jullie wel een 'onderhoudsbeurtje' gebruiken?</p>
+
+        <div class="optie-rij">
+            <button class="stem-btn btn-0" onclick="stem(0)">Communicatie</button>
+            <div class="balk-container" id="container-0">
+                <div id="vulling-0" class="balk-vulling balk-0"></div>
+                <div id="cijfer-0" class="stem-cijfer">0</div>
+            </div>
+        </div>
+
+        <div class="optie-rij">
+            <button class="stem-btn btn-1" onclick="stem(1)">Tijd voor elkaar</button>
+            <div class="balk-container" id="container-1">
+                <div id="vulling-1" class="balk-vulling balk-1"></div>
+                <div id="cijfer-1" class="stem-cijfer">0</div>
+            </div>
+        </div>
+
+        <div class="optie-rij">
+            <button class="stem-btn btn-2" onclick="stem(2)">Romantiek</button>
+            <div class="balk-container" id="container-2">
+                <div id="vulling-2" class="balk-vulling balk-2"></div>
+                <div id="cijfer-2" class="stem-cijfer">0</div>
+            </div>
+        </div>
+
+        <div class="optie-rij">
+            <button class="stem-btn btn-3" onclick="stem(3)">Geloof</button>
+            <div class="balk-container" id="container-3">
+                <div id="vulling-3" class="balk-vulling balk-3"></div>
+                <div id="cijfer-3" class="stem-cijfer">0</div>
+            </div>
+        </div>
+    </div>
+
+    <div class="admin-menu" id="admin-menu">
+        <strong style="display: block; margin-bottom: 10px; color: #718096;">Beheerdersmenu</strong>
+        <button class="admin-btn" onclick="slaOpAlsTXT()">📥 Backup Opslaan</button>
+        <button class="admin-btn" onclick="document.getElementById('file-input').click()">📤 Backup Inladen</button>
+        <button class="admin-btn rood" onclick="resetStemmen()">🗑️ Reset</button>
+        <button class="admin-btn" onclick="sluitAdmin()">❌ Sluit</button>
+        <input type="file" id="file-input" accept=".txt" onchange="laadVanTXT(event)">
+    </div>
+
+    <script>
+        let stemmen = JSON.parse(localStorage.getItem('apkStemmen')) || [0, 0, 0, 0];
+
+        // --- Geheime Beheerder Logica ---
+        let klikTeller = 0;
+        let klikTimer;
+
+        function checkGeheimeKlik() {
+            klikTeller++;
+            clearTimeout(klikTimer);
+            
+            // Als er 2 seconden niet geklikt is, reset de teller weer naar 0
+            klikTimer = setTimeout(() => { klikTeller = 0; }, 2000);
+
+            // Bij 5 snelle kliks: vraag om pincode!
+            if (klikTeller >= 5) {
+                klikTeller = 0; // Reset direct
+                let pin = prompt("Geef de 4-cijferige pincode om beheer te openen:");
+                if (pin === "0000") {
+                    document.getElementById('admin-menu').style.display = 'block';
+                } else if (pin !== null) {
+                    alert("Foutieve pincode.");
+                }
+            }
+        }
+
+        function sluitAdmin() {
+            document.getElementById('admin-menu').style.display = 'none';
+        }
+
+        // --- Stem logica ---
+        function stem(index) {
+            stemmen[index]++;
+            localStorage.setItem('apkStemmen', JSON.stringify(stemmen));
+            tekenBalken();
+        }
+
+        function tekenBalken() {
+            let maxStemmen = Math.max(...stemmen);
+            if (maxStemmen === 0) maxStemmen = 1; 
+
+            for (let i = 0; i < 4; i++) {
+                let percentage = (stemmen[i] / maxStemmen) * 100;
+                let vulling = document.getElementById('vulling-' + i);
+                let cijfer = document.getElementById('cijfer-' + i);
+                let container = document.getElementById('container-' + i);
+
+                vulling.style.width = percentage + '%';
+                cijfer.innerText = stemmen[i];
+
+                let containerBreedte = container.offsetWidth;
+                let pixelBreedte = (percentage / 100) * containerBreedte;
+
+                if (pixelBreedte > 40) {
+                    cijfer.style.left = (pixelBreedte / 2) + 'px';
+                    cijfer.style.transform = 'translateX(-50%)'; 
+                    cijfer.style.color = (i === 2) ? '#2D3748' : 'white';
+                } else {
+                    cijfer.style.left = (pixelBreedte + 15) + 'px';
+                    cijfer.style.transform = 'none';
+                    cijfer.style.color = '#2D3748'; 
+                }
+            }
+        }
+
+        // --- Opslaan & Laden ---
+        function slaOpAlsTXT() {
+            const tekst = stemmen.join(',');
+            const blob = new Blob([tekst], { type: 'text/plain' });
+            const url = window.URL.createObjectURL(blob);
+            const a = document.createElement('a');
+            a.style.display = 'none';
+            a.href = url;
+            a.download = 'stemmen.txt';
+            document.body.appendChild(a);
+            a.click();
+            window.URL.revokeObjectURL(url);
+            document.body.removeChild(a);
+        }
+
+        function laadVanTXT(event) {
+            const bestand = event.target.files[0];
+            if (!bestand) return;
+
+            const lezer = new FileReader();
+            lezer.onload = function(e) {
+                const inhoud = e.target.result.trim();
+                if (inhoud) {
+                    const geladenStemmen = inhoud.split(',').map(Nummer => parseInt(Nummer, 10));
+                    if (geladenStemmen.length === 4 && !geladenStemmen.some(isNaN)) {
+                        stemmen = geladenStemmen;
+                        localStorage.setItem('apkStemmen', JSON.stringify(stemmen));
+                        tekenBalken();
+                        alert("Stemmen succesvol geladen!");
+                    } else {
+                        alert("Het bestand lijkt geen geldige uitslag te bevatten.");
+                    }
+                }
+            };
+            lezer.readAsText(bestand);
+            event.target.value = ''; 
+        }
+
+        function resetStemmen() {
+            if(confirm("Weet je ZEKER dat je alle stemmen op 0 wilt zetten? Dit kan niet ongedaan gemaakt worden.")) {
+                stemmen = [0, 0, 0, 0];
+                localStorage.setItem('apkStemmen', JSON.stringify(stemmen));
+                tekenBalken();
+                sluitAdmin(); // Sluit menuutje netjes af na reset
+            }
+        }
+
+        window.onload = tekenBalken;
+        window.addEventListener('resize', tekenBalken);
+    </script>
+</body>
+</html>
